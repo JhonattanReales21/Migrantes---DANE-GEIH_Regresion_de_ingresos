@@ -1,0 +1,291 @@
+library(funModeling)
+library(tidyverse)
+library(readxl)
+library(readr)
+
+
+#Se leen los datos 
+Dane_2019 <- read.csv("Dane2020_completa_(Hasta febrero).csv", header = T, sep = ",", dec = ".")
+
+View(df_status(Dane_2019))
+
+#SOLO PERSONAS MAYORES DE 12 A?OS
+Dane_2019 <- filter(Dane_2019, P6040 >=12)
+Dane_2019 <- filter(Dane_2019, !(is.na(P6040)))
+sum(is.na(Dane_2019$P6040))
+#filtrar TODOS LOS INACTIVOS
+Dane_2019 <- filter(Dane_2019, !(!(is.na(P7430) )))
+
+#nos quedamos con 3.197 personas.
+
+
+#CREAMOS LA VARIABLE OCUPACI?N ( 4 niveles)
+Dane_2019$ocupacion[(!(is.na(Dane_2019$P6765))) & (Dane_2019$P6870 >=4)] = "Independiente"
+
+Dane_2019$ocupacion[ (!(is.na(Dane_2019$P6765))) & (Dane_2019$P6870 <4) |
+                       (is.na(Dane_2019$P6765) & (Dane_2019$P6870 <4)) |
+                       Dane_2019$P6430==7] = "Empleo.informal"
+
+Dane_2019$ocupacion[ Dane_2019$P6440 %in% (1:2) & (is.na(Dane_2019$P6765)) & (Dane_2019$P6870 >=4)] = "Empleo.formal"
+
+#Desempleados
+Dane_2019$ocupacion[is.na(Dane_2019$ocupacion)] = "Desempleado"
+
+# Observar frecuencia
+m <- Dane_2019%>%group_by(ocupacion)%>%tally()
+m
+
+###### REALIZAR LOS CAMBIOS PERTINENTES A LA BASE DE DATOS (escoger variables generales y renombrar)
+Dane_2019 <- mutate(Dane_2019, "Familia" = paste(Dane_2019$ï..DIRECTORIO, "-", Dane_2019$SECUENCIA_P))
+Dane_2019 <- dplyr::select(Dane_2019, -1)
+Dane_2019 <- dplyr::select(Dane_2019, 1, Familia, everything())
+Dane_2019 <- dplyr::select(Dane_2019, id_personal, Familia, DPTO.x, AREA.x, MES.x, P6020, P6040, P6050, P6070, P6090, P6110, P6160, P6170, P6210, P6220, ESC,
+                           P6240, P6280, P6290, P6310, P6260, P6320, P6340, P6350, P6430, P6440, P6450, P6460, P6424S3, P6426, P6480, P9440, P6500,
+                           P6510, P6510S1, P6510S2, P6630S1, P6630S1A1, P6765, P6772, P6775, P6750, P6780, P1800, P1800S1, P1802, P1879, P6800, P6870,
+                           P6880, P6915, P6920, P6940, P6990, P9450, P7020, P760, P7026, P7028, P1880, P7130, P7100,P7120, P514, P515, P7240, 
+                           OFICIO, INGLABO, P7250, P7280, P7310, P7360 ,P7260, OFICIO2, P7430, P7450, P7458,P1884, P1807, P7495, P7505,
+                           P1661S4, P1661S4A1, P1661S4A2,P753S3, P753, P756S3,P755, ocupacion, fex_c_2011.x,RAMA2D_D_R4, RAMA2D_R4)
+
+
+Dane_2019 <- dplyr::rename(Dane_2019, Identificacion=id_personal, Departamento=DPTO.x, Area=AREA.x, Mes=MES.x, "Años de escolaridad" = ESC, "Genero"=P6020,
+                           Edad=P6040, Parentesco=P6050, "Estado.civil" = P6070, "P6090 Cuenta con seguridad social en salud" = P6090)
+Dane_2019 <- Dane_2019%>%dplyr::rename("P6110 Quien paga por la salud?" = P6110,  "P6160 Sabe leer y escribir?" = P6160, "P6170 Asiste a una entidad educativa?" =P6170,
+                                       "Nivel.educativo.alcanzado" = P6210, "P6220 Titulo o diploma de mayor nivel" = P6220, "P6290 Que ha hecho para conseguir trabajo" = P6290, "P6280 Ha intentado conseguir trabajo en este mes?" = P6280,
+                                       "P6240 Que fue lo que mas hizo la semana pasada?" = P6240, "P6310 Por que no hizo diligencias para trabajar?" = P6310, "P6260 Aunque no trabajó la semana pasada, tuvo ingresos?" = P6260,
+                                       "P6320 El ultimo año ha trabajado por lo menos 2 semanas?" = P6320, "P6340 En el ultimo año ha buscado trabajado?" = P6340, "P6350 Cuantos meses lleva sin buscar trabajo?" = P6350, "P6440 Como -Asalariado-, cuenta con algún tipo de contrato?" = P6440, "P6500 Cuanto ganó el ultimo mes?" =P6500,
+                                       "P6765 Que forma de trabajo -independiente- realizó?" =P6765, "P6750 Ganancia neta por honorarios o negocio" =P6750, "P1800 Tiene empleado o personas que lo ayuden?" =P1800, "P6800 Cuantas horas a la semana trabaja?" = P6800,
+                                       "P6870 Numero de personas en la empresa o negocio donde labora" = P6870, "P6880 Donde realiza su trabajo?" =P6880, "P6915 En caso de enfermedad, como cubre los costos" =P6915, 
+                                       "P6920 Cotiza a pensión?" =P6920, "P6940 Quien paga el fondo de pensiones?" =P6940,"P6990 Cuenta con ARL?"=P6990,
+                                       "P7020 Tuvo otro trabajo antes del actual?" =P7020, "P760 Meses desempleado antes de conseguir trabajo?" =P760, "P7026 Tiempo en empleo anterior (meses)"=P7026,"P7028 En su empleo anterior usted era?"=P7028,
+                                       "P1880 Por que dejó su empleo anterior?" = P1880, "P7130 Desea cambiar su trabajo actual?" =P7130, "P7100 Horas adicionales que puede trabajar en la semana"=P7100, 
+                                       "P7120 Disponible para trabajar mas horas a la semana?"=P7120, "P514 Considera que su trabajo es estable?"=P514, "P515 Su horario de trabajo y responsabilidades familiares son compatibles?"=P515, "P7240 Si no tiene empleo de donde obtendria los recursos?"=P7240,
+                                       "P6430 En este trabajo usted es:"=P6430, "Rama de actividad de la empresa donde labora(2digitos)"=RAMA2D_R4, "Ingresos laborales"=INGLABO, "P7250 Semanas que lleva -Desocupado- buscando trabajo, o que estuvo buscando"=P7250,
+                                       "P7310 Buscando trabajo por primera vez?"=P7310, "P7260 Cuantas horas a la semana podría trabajar?"=P7260,"Rama de la actividad que realiza la ultima empresa donde laboró (2 digitos)?"=RAMA2D_D_R4, "P7430 Es -Inactivo- pero, ha trabajado alguna vez?"=P7430, 
+                                       "OFICIO codigo de su oficio actual"=OFICIO, "OFICIO2 Codigo del ultimo oficio que realizó"=OFICIO2, "P7450 Por que dejo de trabajar?"=P7450, "P1884 Cuantas horas a la semana puede trabajar?"=P1884, "P1807 -inactivo-, Salario minimo que aceptaria"=P1807,
+                                       "P7495 Recibio pagos por pensiones o arriendos?"=P7495, "P7505 Recibio dinero de otras persons o instituciones?"=P7505,"P1661S4 Recibio ayuda de entidades diferentes al gobierno?"=P1661S4, 
+                                       "P1661S4A1 Cual entidad no gubernamental?"=P1661S4A1, "P1661S4A2 Monto recibido"=P1661S4A2, "P7360 Numero de personas en la empresa o negocio donde laboraba" = P7360, "P755 Donde vivia hace 5 años?"=P755,
+                                       "P753 Donde vivia hace 12 meses?" = P753, "P753S3 En que pais vivia hace 12 meses?"=P753S3, "Factor.de.expansion"=fex_c_2011.x)
+
+
+#                     CREACIÓN DE VARIABLES PARA MODELOS
+
+#Modelo Binario Ocupado & Desocupado
+Dane_2019$Y_modelo1[Dane_2019$ocupacion %in% c("Empleo.formal", "Empleo.informal","Independiente")] = "Ocupado"
+Dane_2019$Y_modelo1[Dane_2019$ocupacion=="Desempleado"] = "Desocupado"
+
+#Modelo Binario Empleo & Desocupado-informal
+Dane_2019$Y_modelo2[Dane_2019$ocupacion %in% c("Empleo.formal","Independiente")] = "Ocupado"
+Dane_2019$Y_modelo2[Dane_2019$ocupacion %in% c("Desempleado", "Empleo.informal")] = "Desocupado/Informal"
+
+#Modelo Binario informal & Desempleado
+Dane_2019$Y_modelo3[Dane_2019$ocupacion=="Empleo.informal"] = "Informal"
+Dane_2019$Y_modelo3[Dane_2019$ocupacion=="Desempleado"] = "Desocupado"
+#en el anterior modelo (3) se deben filtrar solo los desempleados e informales
+
+#Modelo Multiclase Empleo, informal y desempleado
+Dane_2019$Y_modelo4[Dane_2019$ocupacion %in% c("Empleo.formal","Independiente")] = "Ocupado"
+Dane_2019$Y_modelo4[Dane_2019$ocupacion=="Desempleado"] = "Desocupado"
+Dane_2019$Y_modelo4[Dane_2019$ocupacion=="Empleo.informal"] = "Informal"
+
+
+######  Construir variables nuevas, combinando preguntas de cada modulo####
+######     Preparar la base de datos y corregir posibles errores  #######
+
+# ha trabajado antes
+Dane_2019$`P7310 Buscando trabajo por primera vez?`[Dane_2019$`P7310 Buscando trabajo por primera vez?` == 1] = 3
+Dane_2019$`P7310 Buscando trabajo por primera vez?`[Dane_2019$`P7310 Buscando trabajo por primera vez?` == 2] = 1
+Dane_2019$`P7310 Buscando trabajo por primera vez?`[Dane_2019$`P7310 Buscando trabajo por primera vez?` == 3] = 2
+Dane_2019 <- dplyr::rename(Dane_2019, "P7310.Ha.trabajado.antes"=`P7310 Buscando trabajo por primera vez?`)
+for (i in 1:nrow(Dane_2019)) {
+  if (!(is.na(Dane_2019$`P6800 Cuantas horas a la semana trabaja?`[i])) == T) {
+    Dane_2019$Empleo.antes[i] <- Dane_2019$`P7020 Tuvo otro trabajo antes del actual?`[i]
+  }
+  if (!(is.na(Dane_2019$`P7250 Semanas que lleva -Desocupado- buscando trabajo, o que estuvo buscando`[i])) == T) {
+    Dane_2019$Empleo.antes[i] <- Dane_2019$P7310.Ha.trabajado.antes[i]
+  }
+  if (!(is.na(Dane_2019$`P7450 Por que dejo de trabajar?`[i])) == T) {
+    Dane_2019$Empleo.antes[i] <- Dane_2019$`P7430 Es -Inactivo- pero, ha trabajado alguna vez?`[i]
+  }
+}
+
+#Horas que puede trabajar en la semana o las que trabaja
+Dane_2019$Horas.disponibles= 0
+
+for (i in 1:nrow(Dane_2019)) {
+  if (!(is.na(Dane_2019$`P7260 Cuantas horas a la semana podría trabajar?`[i])) == T) {
+    Dane_2019$Horas.disponibles[i] <- Dane_2019$`P7260 Cuantas horas a la semana podría trabajar?`[i]
+  }
+  
+  if (!(is.na(Dane_2019$`P6800 Cuantas horas a la semana trabaja?`[i])) == T) {
+    Dane_2019$Horas.disponibles[i] <- Dane_2019$`P6800 Cuantas horas a la semana trabaja?`[i] 
+  }
+  if (!(is.na(Dane_2019$`P7100 Horas adicionales que puede trabajar en la semana`[i])) == T){
+    Dane_2019$Horas.disponibles[i] <- Dane_2019$Horas.disponibles[i] + Dane_2019$`P7100 Horas adicionales que puede trabajar en la semana`[i]
+  }
+}
+
+#Rama de la empresa donde trabaja o donde trabajó
+Dane_2019$Rama.actividad= 0
+
+for (i in 1:nrow(Dane_2019)) {
+  if (!(is.na(Dane_2019$`Rama de la actividad que realiza la ultima empresa donde laboró (2 digitos)?`[i])) == T) {
+    Dane_2019$Rama.actividad[i] <- Dane_2019$`Rama de la actividad que realiza la ultima empresa donde laboró (2 digitos)?`[i]
+  }
+  if (!(is.na(Dane_2019$`Rama de actividad de la empresa donde labora(2digitos)`[i])) == T) {
+    Dane_2019$Rama.actividad[i] <- Dane_2019$`Rama de actividad de la empresa donde labora(2digitos)`[i]
+  }
+}
+
+#Variable tiempo en Colombia
+Dane_2019$tiempo.en.colombia= 0
+
+for (i in 1:nrow(Dane_2019)) {
+  if(!(is.na(Dane_2019$`P753S3 En que pais vivia hace 12 meses?`[i])) == T){
+    Dane_2019$tiempo.en.colombia[i] <- 1
+  }
+  if (Dane_2019$`P753 Donde vivia hace 12 meses?`[i] %in% (2:3)) {
+    Dane_2019$tiempo.en.colombia[i] <- 2
+  }
+  if(!(is.na(Dane_2019$P756S3[i])) == T & Dane_2019$`P755 Donde vivia hace 5 años?`[i] %in% (2:3) & Dane_2019$`P753 Donde vivia hace 12 meses?`[i] %in% (2:3)) {
+    Dane_2019$tiempo.en.colombia[i] <- 3
+  }
+  if (Dane_2019$tiempo.en.colombia[i]==0) {
+    Dane_2019$tiempo.en.colombia[i] <- 1
+  }
+}
+
+summary(Dane_2019$Factor.de.expansion)
+
+#Guardar base de datos 
+write.csv(Dane_2019, file="Dane_reducida_2020.csv")
+
+
+
+
+######################    Selección de variables predictoras    ##########################
+########     y cambio de tipo de variables         #######
+
+Dane_paramodelos <- dplyr::select(Dane_2019, Identificacion,Departamento, Genero, Edad, Parentesco, Estado.civil, Nivel.educativo.alcanzado, 
+                                  Empleo.antes, Rama.actividad,tiempo.en.colombia,Horas.disponibles, ocupacion, Y_modelo1, Y_modelo2, Y_modelo3, Y_modelo4, Factor.de.expansion)
+
+Dane_paramodelos <- Dane_paramodelos %>% filter(!(Rama.actividad == "0"))
+
+glimpse(Dane_paramodelos)
+
+#Valores faltantes
+sum(is.na(Dane_paramodelos$Departamento))
+sum(is.na(Dane_paramodelos$Genero))
+sum(is.na(Dane_paramodelos$Edad))
+sum(is.na(Dane_paramodelos$Parentesco))
+sum(is.na(Dane_paramodelos$Estado.civil))
+sum(is.na(Dane_paramodelos$Nivel.educativo.alcanzado))
+sum(is.na(Dane_paramodelos$Empleo.antes))
+sum(is.na(Dane_paramodelos$Rama.actividad))
+sum(is.na(Dane_paramodelos$Numero.de.personas.en.empresa))
+sum(is.na(Dane_paramodelos$tiempo.en.colombia))
+sum(is.na(Dane_paramodelos$ocupacion))
+sum(is.na(Dane_paramodelos$Y_modelo1))
+sum(is.na(Dane_paramodelos$Y_modelo2))
+sum(is.na(Dane_paramodelos$Y_modelo3)) #636 faltantes (Empleo NO informal)
+sum(is.na(Dane_paramodelos$Y_modelo4))
+sum(is.na(Dane_paramodelos$Factor.de.expansion))
+
+# Ultimos retoques a variables
+Dane_paramodelos$Departamento <-  as.factor(Dane_paramodelos$Departamento)
+Dane_paramodelos$Genero <- as.factor(Dane_paramodelos$Genero)
+Dane_paramodelos$Parentesco <- as.factor(Dane_paramodelos$Parentesco)
+Dane_paramodelos$Estado.civil <- as.factor(Dane_paramodelos$Estado.civil)
+Dane_paramodelos$Nivel.educativo.alcanzado<- as.factor(Dane_paramodelos$Nivel.educativo.alcanzado)
+Dane_paramodelos$Empleo.antes <- as.factor(Dane_paramodelos$Empleo.antes)
+Dane_paramodelos$Rama.actividad <- as.factor(Dane_paramodelos$Rama.actividad)
+Dane_paramodelos$tiempo.en.colombia <- as.factor(Dane_paramodelos$tiempo.en.colombia)
+Dane_paramodelos$Y_modelo1 <- as.factor(Dane_paramodelos$Y_modelo1)
+
+# Cambiar niveles variables
+Dane_paramodelos$Parentesco <- fct_collapse(Dane_paramodelos$Parentesco, "Jefe de hogar"="1", "Nucleo familiar"=c("2","3"), "Otros parientes"=c("4","5"), "Otros No parientes"=c("6","7","8","9"))
+Dane_paramodelos$Genero <- fct_collapse(Dane_paramodelos$Genero, "Masculino"="1", "Femenino"=c("2"))
+Dane_paramodelos$Empleo.antes <- fct_collapse(Dane_paramodelos$Empleo.antes, "Si"="1", "No"=c("2"))
+Dane_paramodelos$tiempo.en.colombia <- fct_collapse(Dane_paramodelos$tiempo.en.colombia, "Menos de 1 año"="1", "Entre 1 y 5 años"=c("2"), "Mas de 5 años" ="3")
+Dane_paramodelos$Estado.civil <- fct_collapse(Dane_paramodelos$Estado.civil, "Soltero"="6", "Casado y/o union libre"=c("1","2","3"), "Separado y/o viudo"=c("4","5"))
+Dane_paramodelos$Nivel.educativo.alcanzado <- fct_collapse(Dane_paramodelos$Nivel.educativo.alcanzado, "Ninguno/No_sabe"=c("1","9"), "Preescolar"="2","Básica primaria"="3","Básica secundaria"="4","Media (10o -13o)"="5","Superior o universitaria"="6",)
+
+
+
+#!!!!!!!!!!  RENOMBRAR VARIABLE RAMA.ACTIVIDAD
+Dane_paramodelos$Rama.actividad <-fct_collapse(Dane_paramodelos$Rama.actividad, "Agricultura, ganadería y caza"= "1" , "Explotación de minas y carbón"= c("5","8","9"),
+                                               "Elaboración de productos alimenticios"=c("10","11"),"Fabricación de productos textiles"="13", "Fabricación de prendas de vestir"="14", "Curtido y preparado de cueros, trabajar con cuero"="15",
+                                               "Fabricación de productos de madera"="16","Fabricación de producto de papel y cartón"="17", "Actividades de edición/reproducción de grabaciones"="18",
+                                               "Fabricación de sustancias y productos químicos"=c("19", "20","21"), "Fabricación de productos de caucho y de plástico"="22", "Fabricación de productos minerales no metálicos"="23",
+                                               "Fabricación de productos metalúrgicos básicos"="24", "Fabricación de productos de metal"="25",
+                                               "Fabricación de maquinaria y aparatos eléctricos"="27", "Otras industrias manufactureras"="32", "Instalación, mantenimiento y reparación de maquinaria"="33",
+                                               "Fabricación de vehículos automotores"="29", "Fabricación de otros tipos de equipo de transporte"="30", "Fabricación de muebles / industrias manufactureras"="31",
+                                               "Suministro de electricidad, gas y vapor"="35", "Captación, depuración y distribución de agua"="36", "Recolección, tratamiento y disposición de desechos"="38",
+                                               "Construcción"=c("41","42","43"), "Comercio al por mayor y al por menor"=c("45", "46","47"),"Hoteles, restaurantes, bares y similares"=c("55", "56"), "Transporte por vía terrestre; transporte por tuberías"="49",
+                                               "Actividades complementarias/auxiliares al transporte"="52", "Correo y telecomunicaciones"=c("53","59","61"), "Informática y actividades conexas"=c("62","63"),"Intermediación financiera"="64",
+                                               "Financiación de planes de seguros y pensiones"="65", "Actividades auxiliares de la intermediación financiera"="66", "Actividades inmobiliarias"="68", "Actividades profesionales, cientificas y tecnicas" =c("69","71", "73", "74"),
+                                               "Otras actividades empresariales"=c("77","78","79","80","81","82"),"Administración pública y defensa"="84",
+                                               "Educación"="85", "Servicios sociales y de salud"=c("86","87","88"), 
+                                               "Actividades culturales y deportivas"=c("90","91","92","93"), "Otras actividades de servicios"=c("94","95","96"), "Hogares privados con servicio doméstico"="97")
+
+
+freq(Dane_paramodelos$Rama.actividad)
+levels(Dane_paramodelos$Rama.actividad)
+Dane_paramodelos$Rama.actividad <- as.factor(Dane_paramodelos$Rama.actividad)
+
+#Esta funcion escoge como target el nivel con menos frecuencia de la variable RESPUESTA BINARIA 
+categ_analysis(data=Dane_paramodelos, input="Rama.actividad", target = "Y_modelo1")
+
+
+# Ahora las varibles numericas
+#EDAD
+Dane_paramodelos$Edad <-  cut(Dane_paramodelos$Edad,  breaks = c(11,14,18, 26, 59, 100))
+describe(Dane_paramodelos$Edad)      
+categ_analysis(data=Dane_paramodelos, input="Edad", target = "Y_modelo1")
+
+ggplot(Dane_paramodelos, aes(Edad)) + 
+  geom_bar(fill="#0072B2") + theme_bw()
+
+Dane_paramodelos%>%group_by(Edad, Y_modelo1)%>%tally()%>%
+  ggplot(aes(x=Edad, y=n, fill=Y_modelo1)) + 
+  geom_bar(stat= "identity", position = "dodge") + theme_bw()+coord_flip()
+
+
+# HORAS.DISPONIBLES
+Dane_paramodelos$Horas.disponibles <-  cut(Dane_paramodelos$Horas.disponibles,  breaks = c(0,39, 48, 130))
+describe(Dane_paramodelos$Edad)      
+categ_analysis(data=Dane_paramodelos, input="Horas.disponibles", target = "Y_modelo1")
+
+ggplot(Dane_paramodelos, aes(Horas.disponibles)) + 
+  geom_bar(fill="#0072B2") + theme_bw()
+
+#Aspectos finales
+Dane_paramodelos$Y_modelo2 <-  as.factor(Dane_paramodelos$Y_modelo2)
+Dane_paramodelos$Y_modelo3 <-  as.factor(Dane_paramodelos$Y_modelo3)
+Dane_paramodelos$Y_modelo4 <-  as.factor(Dane_paramodelos$Y_modelo4)
+
+str(Dane_paramodelos)
+Dane_paramodelos%>%df_status()%>%dplyr::select(variable, type, unique)%>%View()
+
+###BASE LISTA PARA CORRER MODELOS
+write.csv(Dane_paramodelos, file="Dane_paramodelos_2020_(Hasta febrero).csv")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
