@@ -5,15 +5,15 @@
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "0",
+    "hash" : "2514789163",
     "id" : "6DD81ED7",
-    "lastKnownWriteTime" : 1594938057,
-    "last_content_update" : 1594938057723,
+    "lastKnownWriteTime" : 1594940381,
+    "last_content_update" : 1594940381472,
     "path" : "C:/Users/USER/Dropbox/ASPECTOS MAESTRIA/ENTREGABLE 3/Modificación base de datos para regresion/Migrantes---DANE-GEIH_Regresion_de_ingresos/Codigos/Etapas de pre.procesamiento de datos/Pre-procesamiento para modelos.R",
     "project_path" : "Codigos/Etapas de pre.procesamiento de datos/Pre-procesamiento para modelos.R",
     "properties" : {
-        "cursorPosition" : "0,0",
-        "scrollLine" : "10"
+        "cursorPosition" : "390,2",
+        "scrollLine" : "373"
     },
     "read_only" : false,
     "read_only_alternatives" : [

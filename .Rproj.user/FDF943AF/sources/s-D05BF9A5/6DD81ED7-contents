@@ -388,7 +388,7 @@ df_status(Dane_paramodelos_final)
 
 
 write.csv(Dane_paramodelos_final, "Dane_Paramodelos_regresion.csv")
-
+#.
 
 
 
