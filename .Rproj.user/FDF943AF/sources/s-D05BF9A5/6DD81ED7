@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1594855030426.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "6DD81ED7",
+    "lastKnownWriteTime" : 1594938057,
+    "last_content_update" : 1594938057723,
+    "path" : "C:/Users/USER/Dropbox/ASPECTOS MAESTRIA/ENTREGABLE 3/Modificación base de datos para regresion/Migrantes---DANE-GEIH_Regresion_de_ingresos/Codigos/Etapas de pre.procesamiento de datos/Pre-procesamiento para modelos.R",
+    "project_path" : "Codigos/Etapas de pre.procesamiento de datos/Pre-procesamiento para modelos.R",
+    "properties" : {
+        "cursorPosition" : "0,0",
+        "scrollLine" : "10"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

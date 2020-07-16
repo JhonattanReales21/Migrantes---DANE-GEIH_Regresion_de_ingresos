@@ -1,0 +1,33 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1594937476315.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "EF861640",
+    "lastKnownWriteTime" : 28992356398268511,
+    "last_content_update" : 1594937476315,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "A5DE21E9",
+        "caption" : "Dane_paramodelos_final",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=Dane_paramodelos_final&cache_key=A5DE21E9",
+        "displayedObservations" : 21098,
+        "environment" : "",
+        "expression" : "Dane_paramodelos_final",
+        "object" : "Dane_paramodelos_final",
+        "preview" : 0,
+        "totalObservations" : 21098,
+        "variables" : 16
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}
