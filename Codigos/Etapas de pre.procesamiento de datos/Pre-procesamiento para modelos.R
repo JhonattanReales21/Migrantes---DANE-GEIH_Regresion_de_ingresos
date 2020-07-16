@@ -279,19 +279,19 @@ if (Dane_paramodelos3$P6580S2[i] == "2") { # Por algún tipo de bonificación me
   i <- i+1
 }
 
-                      ##### 2. NO ASALARIADOS #####
+                         ##### 2. NO ASALARIADOS #####
 
 # Todos los que no son asalariados tienen un cero en la variable p6750, por lo tanto no afecta sumar los valores.
 Dane_paramodelos3$Ingresos_total <- Dane_paramodelos3$Ingresos_total + Dane_paramodelos3$P6750.Ganancia.neta.por.honorarios.o.negocio
 
 
-                       ##### 3. DESEMPLEADOS ####
+                          ##### 3. DESEMPLEADOS ####
 
 # Todos los que no son asalariados tienen un cero en la variable p6750, por lo tanto no afecta sumar los valores.
 Dane_paramodelos3$Ingresos_total <- Dane_paramodelos3$Ingresos_total + Dane_paramodelos3$P7422S1
 
 
-                  ##### 4. PARA DOS O LAS 3 OCUPACIONES  #####
+                      ##### 4. PARA DOS O LAS 3 OCUPACIONES  #####
 
 # Ingresos por trabajos secundarios y por ayudas de entidades nacionales o internacionales
 Dane_paramodelos3$Ingresos_total <- Dane_paramodelos3$Ingresos_total + Dane_paramodelos3$P7070
@@ -348,19 +348,20 @@ describe(Dane_paramodelos_final$Ingresos_total)
 # referencia variacion IPC año 2020 (3,62%): https://www.dinero.com/economia/articulo/inflacion-e-colombia-enero-2020/281530
 # referencia variacion IPC año 2019 (3,8%): https://www.larepublica.co/economia/dato-de-inflacion-en-colombia-durante-2019-aumento-a-380-segun-dane-2948404
 
+
 Año <- c("2019", "2020")
 variación_IPC <- c(0.038, 0.0362)
 índice <- c(0, 100)
 
-tabla <- as_tibble(cbind(Año, variación_IPC, índice))
-tabla$variación_IPC <-  as.numeric(tabla$variación_IPC)
-tabla$índice <-  as.numeric(tabla$índice)
+tabla_inf <- as_tibble(cbind(Año, variación_IPC, índice))
+tabla_inf$variación_IPC <-  as.numeric(tabla_inf$variación_IPC)
+tabla_inf$índice <-  as.numeric(tabla_inf$índice)
 
 # para calcular el indice de 2019 (t) utilizamos la siguiente ecuación:
 # Indice_año_t = indice_año_t+1/ ( 1 + variacion_IPC (año t)).
 # Debido a que es un año anterior al año base
 
-tabla$índice[1] <- tabla$índice[2]/(1+tabla$variación_IPC[1])  
+tabla_inf$índice[1] <- tabla_inf$índice[2]/(1+tabla_inf$variación_IPC[1])  
 
 # ahora para pasar el precio del 2019 a precio constante, realizamos la siguiente ecuación:
 # Valor en precios constantes = (Valor en precio corriente/indice de precios) * 100
@@ -371,7 +372,7 @@ while (i<=nrow(Dane_paramodelos_final)) {
   
   if (Dane_paramodelos_final$anio[i] == "2019") {
     
-    Dane_paramodelos_final$Ingresos_total[i] <- (Dane_paramodelos_final$Ingresos_total[i]/tabla$índice[1])*100
+    Dane_paramodelos_final$Ingresos_total[i] <- (Dane_paramodelos_final$Ingresos_total[i]/tabla_inf$índice[1])*100
     
   }
   i <- i+1
@@ -388,7 +389,7 @@ df_status(Dane_paramodelos_final)
 
 
 write.csv(Dane_paramodelos_final, "Dane_Paramodelos_regresion.csv")
-#.
+
 
 
 
