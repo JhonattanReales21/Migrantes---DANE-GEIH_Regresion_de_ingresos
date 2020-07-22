@@ -5,96 +5,14 @@ library(tidyverse)
 Dane <- read.csv("Dane_Reducida_Total.csv", header = T, sep = ",", dec = ".")
 
 
-#---------- Breve analisis de los segmentos de ocupacion y sus ingresos ----------
+# Eliminamos a todas las personas que no declararon ingresos, es decir, tenian N.A o 98/99
+Dane <- Dane %>% filter(!((ocupacion =="Asalariado") & (is.na(P6500.Cuanto.ganó.el.ultimo.mes.)) |
+                            (ocupacion =="No asalariado") & (is.na(P6750.Ganancia.neta.por.honorarios.o.negocio)) |
+                            (ocupacion =="Desempleado") & (is.na(P7422S1))|
+                            P7422S1 %in% c(98,99)))
 
-# Observamos la frecuencia de ocupación en la base de datos
-describe(Dane$ocupacion)
+#Nos quedamos con 17,950
 
-# Miramos el estado de las variables
-df_status(Dane)
-
-
-                ##### 1. ASALARIADOS #####
-
-# Filtramos y observamos cuantos no reportaron ingresos
-prueba <- Dane %>% filter(ocupacion=="Asalariado")
-sum(is.na(prueba$P6500.Cuanto.ganó.el.ultimo.mes.)) 
-# !!!!!!! 599 asalariados no reportaron ingresos... se eliminan (?)...Se hacen cero (?)
-
-# Observamos los valores outliers del ingreso sin subsidios 
-describe(prueba$P6500.Cuanto.ganó.el.ultimo.mes.)
-prueba %>% ggplot(aes(x=ocupacion, y=P6500.Cuanto.ganó.el.ultimo.mes.)) + geom_boxplot()+
-  ggtitle("Ingresos en el ultimo mes para Asalariados")+
-  xlab("")+ylab("Monto $") + theme_bw()
-
-# Observamos los valores outliers de los ingresos de subsidios 
-describe(prueba$P6585S1A1)
-prueba %>% ggplot(aes(x=ocupacion, y=P6585S1A1)) + geom_boxplot()+
-  ggtitle("Subsidio de alimentacion")+
-  xlab("")+ylab("Monto $") + theme_bw()
-
-describe(prueba$P6585S2A1)
-prueba %>% ggplot(aes(x=ocupacion, y=P6585S2A1)) + geom_boxplot()+
-  ggtitle("Subsidio de transporte")+
-  xlab("")+ylab("Monto $") + theme_bw()
-
-describe(prueba$P6585S3A1)
-prueba %>% ggplot(aes(x=ocupacion, y=P6585S3A1)) + geom_boxplot()+
-  ggtitle("Subsidio familiar")+
-  xlab("")+ylab("Monto $") + theme_bw()
-
-describe(prueba$P6585S4A1) # Subsidio educativo
-
-describe(prueba$P6545S1) #Ingreso por primas (tecnica, antiguedad)
-
-describe(prueba$P6580S1)
-prueba %>% ggplot(aes(x=ocupacion, y=P6580S1)) + geom_boxplot()+
-  ggtitle("Ingresos por algún tipo de bonificación mensual")+
-  xlab("")+ylab("Monto $") + theme_bw()
-
-
-
-                ##### 2. NO ASALARIADOS ####
-
-# Filtramos y observamos cuantos no reportaron ingresos
-prueba2 <- Dane %>% filter(ocupacion=="No asalariado")
-sum(is.na(prueba2$P6750.Ganancia.neta.por.honorarios.o.negocio)) 
-# !!!!!!! 207 No asalariados no reportaron ingresos... se eliminan (?)...Se hacen cero (?)
-describe(prueba2$P6750.Ganancia.neta.por.honorarios.o.negocio)
-
-# Observamos los valores outliers del ingreso 
-prueba2 %>% ggplot(aes(x=ocupacion, y=P6750.Ganancia.neta.por.honorarios.o.negocio)) + geom_boxplot()+
-  ggtitle("Ingresos en el ultimo mes para No asalariados")+
-  xlab("")+ylab("Monto $") + theme_bw()
-
-
-              ##### 3. DESEMPLEADOS ####
-
-# Filtramos y observamos cuantos reportaron ingresos
-prueba3 <- Dane %>% filter(ocupacion=="Desempleado")
-describe(prueba3$P7422S1)
-# !!!!!!! Solo 608 de 2357 desempleados reportaron ingresos el mes anterior..Se hacen cero el resto (?)
-
-# Observamos los valores outliers del ingreso 
-prueba3 %>% ggplot(aes(x=ocupacion, y=P7422S1)) + geom_boxplot() + ggtitle("Ingresos en el ultimo mes para desempleados")+
-  xlab("")+ylab("Monto $") + theme_bw()
-
-
-            ##### 4. PARA DOS O LAS 3 OCUPACIONES  #####
-
-describe(Dane$P7070)
-describe(Dane$P7510S3A1)
-
-ggplot(Dane, aes(x=ocupacion, y=P7070, fill=ocupacion)) + geom_boxplot() + 
-  ggtitle("Ingresos por actividades secundarias")+xlab("")+ ylab("Monto $") + theme_bw()
-
-ggplot(Dane, aes(x=ocupacion, y=P7510S3A1, fill=ocupacion)) + geom_boxplot() + 
-  ggtitle("Ingresos por entidades nacionales o internacionales")+
-  xlab("")+ ylab("Monto $") + theme_bw()
-
-
-
-                                          #-------.-----     
 #--------------------   Selección de variables para pre-procesamiento    -----------------------
 
 Dane_paramodelos <- dplyr::select(Dane, Identificacion,Familia, Departamento, Genero, Edad, Parentesco, Estado.civil, Nivel.educativo.alcanzado, 
@@ -152,7 +70,7 @@ D2019$Rama.actividad <-fct_collapse(D2019$Rama.actividad, "Agricultura, ganader�
                                                "Reciclaje de metalicos y no metalicos"="37", "Suministro de electricidad, gas y vapor"="40", "Captación, depuración y distribución de agua"="41",
                                                "Construcción"="45", "Comercio al por mayor y al por menor"=c("50", "51","52"),"Hoteles, restaurantes, bares y similares"="55", "Transporte por vía terrestre; transporte por tuberías"="60", "Transporte por vía acuática"="61",
                                                "Transporte por vía aérea"="62", "Actividades complementarias/auxiliares al transporte"="63", "Correo y telecomunicaciones"="64", "Intermediación financiera"="65",
-                                               "Financiaci?n de planes de seguros y pensiones"="66", "Actividades auxiliares de la intermediación financiera"="67", "Actividades inmobiliarias"="70",
+                                               "Financiación de planes de seguros y pensiones"="66", "Actividades auxiliares de la intermediación financiera"="67", "Actividades inmobiliarias"="70",
                                                "Alquiler de maquinaria y equipo sin operarios"="71", "Informática y actividades conexas"="72", "Otras actividades empresariales"="74","Administración pública y defensa"="75",
                                                "Educación"="80", "Servicios sociales y de salud"="85", "Saneamiento y eliminación de desperdicios"="90", "Actividades de asociaciones ncp"="91",
                                                "Actividades culturales y deportivas"="92", "Otras actividades de servicios"="93", "Hogares privados con servicio doméstico"="95", "Organizaciones extraterritoriales"="99")
@@ -196,7 +114,6 @@ Dane_paramodelos2$Horas.disponibles <-  cut(Dane_paramodelos2$Horas.disponibles,
                                     #-------.-----     
   #-------    Construcción de variable respuesta ("Ingresos totales en el ultimo mes")   -------
 
-
 # En las variables de ingresos los NA los convertimos en cero
 Dane_paramodelos2$P6500.Cuanto.ganó.el.ultimo.mes.[is.na(Dane_paramodelos2$P6500.Cuanto.ganó.el.ultimo.mes.)]=0
 Dane_paramodelos2$Cuanto.recibio.por.horas.extras[is.na(Dane_paramodelos2$Cuanto.recibio.por.horas.extras)]=0
@@ -222,6 +139,7 @@ Dane_paramodelos2$P6580S2[is.na(Dane_paramodelos2$P6580S2)]="No responde"
 
 
 Dane_paramodelos2$Cuanto.recibio.por.horas.extras <- as.integer(Dane_paramodelos2$Cuanto.recibio.por.horas.extras)
+Dane_paramodelos2$P7422S1 <- as.integer(Dane_paramodelos2$P7422S1)
 
 glimpse(Dane_paramodelos2)
 df_status(Dane_paramodelos2)
@@ -299,7 +217,7 @@ Dane_paramodelos3$Ingresos_total <- Dane_paramodelos3$Ingresos_total + Dane_para
 
 
 
-Dane_paramodelos3 <- filter(Dane_paramodelos3, !(Ingresos_total%in% 1:200)) #Eliminamos 30 personas que no saben sus ingresos
+Dane_paramodelos3 <- filter(Dane_paramodelos3, !(Ingresos_total%in% 1:200)) #Eliminamos 2 personas que no saben sus ingresos
 
 describe(Dane_paramodelos3$Ingresos_total)
 ggplot(Dane_paramodelos3, aes(x=ocupacion, y=Ingresos_total, fill=ocupacion)) + geom_boxplot() + 
@@ -307,11 +225,11 @@ ggplot(Dane_paramodelos3, aes(x=ocupacion, y=Ingresos_total, fill=ocupacion)) + 
   xlab("")+ ylab("Monto $") + theme_bw()
 
 # A manera de ejemplo, nos quedamos solo con los que ganen menos de 3 millones
-Dane_paramodelos3 %>% filter(Ingresos_total<=3000000) %>% ggplot(aes(x=ocupacion, y=Ingresos_total, fill=ocupacion)) + geom_boxplot() + 
+Dane_paramodelos3 %>% filter(Ingresos_total<=1500000) %>% ggplot(aes(x=ocupacion, y=Ingresos_total, fill=ocupacion)) + geom_boxplot() + 
   ggtitle("Ingresos totales por sector de población")+
   xlab("")+ ylab("Monto $") + theme_bw()
 
-21098 - Dane_paramodelos3 %>% filter(Ingresos_total<=3000000) %>% nrow()  #Solo 123 ganan mas de 3 millones
+17948 - Dane_paramodelos3 %>% filter(Ingresos_total<=1500000) %>% nrow()  #Solo 560 ganan mas de 1.5 millones
 
 
                                             #-------.-----     
@@ -330,8 +248,6 @@ Dane_paramodelos_final  <- Dane_paramodelos_final %>% select(1:12, 32, 34, 35, 3
 df_status(Dane_paramodelos_final)
 
 describe(Dane_paramodelos_final$Ingresos_total)
-
-
 
 
                                                       #-------.-----     
@@ -389,6 +305,7 @@ df_status(Dane_paramodelos_final)
 
 
 write.csv(Dane_paramodelos_final, "Dane_Paramodelos_regresion.csv")
+
 
 
 

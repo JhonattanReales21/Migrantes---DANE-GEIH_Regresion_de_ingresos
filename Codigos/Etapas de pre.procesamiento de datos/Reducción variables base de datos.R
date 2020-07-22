@@ -66,12 +66,13 @@ describe(Dane_2019$ocupacion) # Aprox el 50% de la población mayor de 12 años 
 # 5. Patrón o empleador
 # 6. Trabajador familiar sin remuneracion
 # 7. Trabajador para otros hogares o negocios sin remuneracion
+describe(Dane_2019$P7350.En.su.ultimo.trabajo.era)
 Dane_2019$ocupacion_antes[!(Dane_2019$P6440 %in% (1:2)) & (!(Dane_2019$P7350.En.su.ultimo.trabajo.era %in% (4:7)))] = "No asalariado"
 Dane_2019$ocupacion_antes[!(Dane_2019$P6440 %in% (1:2)) & (!(Dane_2019$P7350.En.su.ultimo.trabajo.era %in% c(1,2,3,8,9)))] = "Asalariado"
 Dane_2019$ocupacion_antes[is.na(Dane_2019$ocupacion_antes)] = "Ocupados"
 
 describe(Dane_2019$ocupacion_antes) 
-1692/(1692+1033) # Aprox el 63% de los desempleados el mes anterior fueron: No asalariadados
+1692/(1692+1033) # Aprox el 62% de los desempleados el mes anterior fueron: No asalariadados
 
 
 ######  Construir variables nuevas, combinando preguntas de cada modulo  ####
