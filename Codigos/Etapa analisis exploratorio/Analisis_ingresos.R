@@ -558,3 +558,8 @@ Tabla_Dep_Rama_2 <- Dane %>%  filter(Ingresos_total<=2500000)%>% group_by(Depart
 
 
   
+  
+  
+  
+ 
+  
